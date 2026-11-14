@@ -1,0 +1,163 @@
+{
+ "_info": "Vorlage und Standardwerte. Das echte Profil liegt unter ~/.config/youtube-videoschnitt/profil.json und wird im Einrichtungsinterview angelegt. Felder mit _ sind Kommentare.",
+ "version": 2,
+ "sprache": "de",
+ "person": {
+  "name": "",
+  "_name": "Wie die Person im Video heißt (Namens-Bauchbinde).",
+  "zusatz": "",
+  "_zusatz": "Kicker über dem Namen, z. B. Marke oder Rolle."
+ },
+ "kanal": {
+  "name": "",
+  "handle": "",
+  "url": "",
+  "avatar": "kanal-avatar.jpg",
+  "_avatar": "Dateiname im Profilordner. Fehlt die Datei, zeigt der Abo-Störer Initialen."
+ },
+ "marke": {
+  "name": "",
+  "website": "",
+  "logo_hell": "logo-hell.png",
+  "_logo_hell": "Helles/weißes Logo für dunkle Flächen (Endkarte). Optional.",
+  "logo_dunkel": "logo-dunkel.png",
+  "farben": {
+   "basis": "#15171c",
+   "basis2": "#23272f",
+   "tinte": "#1c1c1f",
+   "papier": "#f6f5f2",
+   "marke1": "#26456d",
+   "marke2": "#3d72b3",
+   "marke3": "#9cc6ff",
+   "akzent": "#ffd54f",
+   "grau": "#8b8f98",
+   "sand": "#d8d4cc"
+  },
+  "_farben": "papier = aller Text im Bild · tinte = Text auf hellen Pillen (Abo-Button, CTA) · basis/basis2 = Schatten hinter Text, Abdunklungen, Endkarte · marke1–3 = Markenfarben dunkel→hell (Balken, Diagramme, Initialen-Kreis, Werbung-Label) · akzent = NUR CTA-Pille und „Abonniert“-Zustand · grau/sand = Nebeninfos, Platzhalter",
+  "schriften": {
+   "text": "Poppins",
+   "akzent": "",
+   "_schriften": "Google-Fonts-Name der EINEN Schrift für alle Einblendungen (Clean-Stil: Headlines 600, Text 400). setup_profil.py lädt sie in den Profilordner. akzent bleibt normalerweise leer (nur für eigene raw()-Bausteine)."
+  },
+  "_schriften": "Google-Fonts-Namen. setup_profil.py lädt sie in den Profilordner. akzent = Schrift für das eine betonte Wort (*wort*) pro Titel."
+ },
+ "cta": {
+  "aktiv": true,
+  "label": "Kostenlose Community",
+  "url": "",
+  "anzeige": "",
+  "_anzeige": "Kurz-URL in der Browserleiste der CTA-Einblendung, z. B. skool.com/meinname",
+  "screenshot_url": "",
+  "_screenshot_url": "Seite, die vor jedem Video frisch als Screenshot aufgenommen wird (Standard: url).",
+  "titel": "Alle *Ressourcen* zum Video",
+  "outro_titel": "",
+  "pille": "Link in der Beschreibung",
+  "claim": "",
+  "_claim": "Großer Satz auf der Endkarte, ein Wort mit *…* betonen.",
+  "endkarte_sub": "",
+  "stichworte": [],
+  "_stichworte": "Woran man im Transkript erkennt, dass die Person den CTA erwähnt (z. B. Community, Skool, Newsletter)."
+ },
+ "abo_stoerer": {
+  "aktiv": true,
+  "anzahl": 1,
+  "_anzahl": "1 = nach dem Hook, 2 = zusätzlich bei ~60 % des Videos."
+ },
+ "texte": {
+  "abonnieren": "Abonnieren",
+  "abonniert": "Abonniert",
+  "schritt": "Schritt {n} von {total}",
+  "learning": "Learning #{n}",
+  "vorher": "Vorher",
+  "nachher": "Nachher",
+  "zitat_auf": "„",
+  "zitat_zu": "“",
+  "link_beschreibung": "Link in der Beschreibung",
+  "werbung": "Werbung",
+  "rabatt": "*{rabatt}* Rabatt mit meinem Code",
+  "rabattcode": "Rabattcode",
+  "code_angewendet": "Code angewendet",
+  "link_und_code": "Link und Code in der Beschreibung"
+ },
+ "ablage": {
+  "wurzel": "",
+  "_wurzel": "Ordner, in dem pro Video ein Unterordner liegt. Leer = der Ordner, auf den die Person beim Auftrag zeigt.",
+  "ordner_schema": "YYYY-MM-DD titel",
+  "arbeitsordner": "Schnitt-Arbeitsdateien",
+  "ergebnis": "{name} – fertig 4K.mp4",
+  "kapitel_datei": "Kapitelmarken.txt",
+  "transkript_datei": "Transkript-geschnitten.txt",
+  "geschuetzt": [],
+  "_geschuetzt": "Dateien/Ordner im Videoordner, die andere Werkzeuge anlegen und die dieser Skill nie überschreibt (z. B. Beschreibung.txt, Thumbnails/).",
+  "beschreibung_datei": "",
+  "_beschreibung_datei": "Falls eine YouTube-Beschreibung mit Kapiteln im Ordner liegt: deren Dateiname. Die Kapitelzeiten werden nach dem Schnitt korrigiert (mit Sicherungskopie)."
+ },
+ "aufnahme": {
+  "setups": [],
+  "_setups": "Liste bekannter Kamera-/Bildschirm-Layouts, vermessen mit references/layouts.md: {name, beschreibung, layout:{type, face, cam, screen}}",
+  "kamera_spur": {
+   "vorhanden": false,
+   "erkennung": [
+    "Kamera only",
+    "cam only",
+    "Kamera"
+   ],
+   "crop": null,
+   "_crop": "Bildausschnitt der Rohkamera wie in der Vollbildszene {x,y,w,h} – wird mit match_crop.py gemessen."
+  },
+  "rahmen_radius": 0.065,
+  "_rahmen_radius": "Eckenrundung, wenn die Person nachträglich im 9:16-Rahmen gezeigt wird (Learning im Vollbild, Partner-Einblendung), als Anteil der Rahmenbreite. Am besten wie die eigene Kamera-Maske in OBS; 0 = eckig.",
+  "ausgabe": "4k",
+  "fps": 30
+ },
+ "schnitt": {
+  "pause_keep": {
+   "th": 0.3,
+   "sc": 0.42
+  },
+  "pushin_max": 1.11,
+  "_pushin_max": "Stärkster Zoom bei Jump-Cuts im Vollbild (1.0 = aus).",
+  "inhalt_kuerzen": false,
+  "_inhalt_kuerzen": "false = nur Pausen, Versprecher, Wiederholungen raus. true = auch inhaltlich straffen (nach Rückfrage)."
+ },
+ "einblendungen": {
+  "dichte_sekunden": 45,
+  "_dichte_sekunden": "Etwa alle wie viele Sekunden eine Einblendung (Intro dichter).",
+  "text_hinter_person": true,
+  "learnings": true,
+  "kapitelkarten": true,
+  "namens_bauchbinde": true,
+  "_hinweis": "Bausteine abschalten, die nicht zum Kanal passen. Details in references/storyboard-guide.md."
+ },
+ "ton": {
+  "stimme_fx": "anull",
+  "_stimme_fx": "anull = Stimme im Original. Sonst eine ffmpeg-Filterkette (siehe references/audio.md).",
+  "ziel_lufs": -14,
+  "musik": true,
+  "musik_stimmungen": {},
+  "_musik_stimmungen": "Eigene MusicGen-Prompts je Stimmung, z. B. {\"intro\": \"…\"}. Leer = Standard (intro, work, reveal, outro, tension).",
+  "sfx": true,
+  "sfx_pegel": 1.0
+ },
+ "bilder": {
+  "generator": "keiner",
+  "_generator": "codex = Codex-CLI aus der ChatGPT-App (ChatGPT-Abo, kein API-Key) für eigene Fotos und Illustrationen · keiner = nur Screenshots · anderer = Werkzeug in 'hinweis' beschreiben",
+  "codex_pfad": "",
+  "hinweis": "",
+  "foto_stil": ""
+ },
+ "schreibstil": {
+  "regeln": [
+   "keine Emojis",
+   "kurz und konkret statt Floskeln"
+  ],
+  "_regeln": "Gilt für alle Texte in Einblendungen und für Kapitelmarken."
+ },
+ "begleit_skill": "",
+ "_begleit_skill": "Optional: anderer Skill, der Titel/Beschreibung/Thumbnails erstellt und das geschnittene Transkript braucht.",
+ "wuensche": [],
+ "_wuensche": "Freie Regeln aus dem Interview und aus späterem Feedback, je ein Satz. Werden bei jedem Video beachtet.",
+ "werbepartner": {
+  "_info": "Bezahlte Kooperationen: je Partner ein Ordner <Profil>/partner/<name>/ mit partner.json und Logos (references/werbepartner.md). Im Video dann \"sponsor\": \"<name>\" in project.json."
+ }
+}
