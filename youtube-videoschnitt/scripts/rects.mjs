@@ -5,7 +5,8 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 const home = process.env.HOME;
 const pp = execSync(`find ${home}/.npm/_npx -path "*node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js" | head -1`).toString().trim();
-const chrome = execSync(`find ${home}/.cache/puppeteer/chrome -path "*MacOS/Google Chrome for Testing" -type f | head -1`).toString().trim();
+// Chrome: ältere HyperFrames-Versionen nutzen ~/.cache/puppeteer, neuere (≥ 0.9.7x) ~/.cache/hyperframes/chrome
+const chrome = execSync(`find ${home}/.cache/puppeteer/chrome ${home}/.cache/hyperframes/chrome \\( -path "*MacOS/Google Chrome for Testing" -o -name "chrome-headless-shell" \\) -type f 2>/dev/null | head -1`).toString().trim();
 const { default: puppeteer } = await import(pp);
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--hide-scrollbars', '--allow-file-access-from-files'] });
 const p = await b.newPage();

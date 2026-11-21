@@ -63,8 +63,16 @@ music = np.zeros((N, 2), np.float32)
 cache = {}
 for win in (CFG.get('music', []) if PR.get('ton.musik', True) else []):
     name = win['track']
+    # "file": eigene Musikdatei (z. B. Intro-Jingle) – absolut, im Profilordner oder im Arbeitsordner.
+    # Track "jingle" ohne file nimmt ton.intro_jingle aus dem Profil. Sonst music/<track>_long.wav (MusicGen).
+    src = win.get('file') or (PR.get('ton.intro_jingle') if name == 'jingle' else None)
     if name not in cache:
-        t = load(os.path.join(W, 'music', f'{name}_long.wav'))
+        if src:
+            src = os.path.expanduser(src)
+            path = src if os.path.isabs(src) else (PR.pfile(src) or os.path.join(W, src))
+        else:
+            path = os.path.join(W, 'music', f'{name}_long.wav')
+        t = load(path)
         cache[name] = t * (db(-20) / np.sqrt(np.mean(t ** 2)))
     tr = cache[name]
     t0 = S(win['from'])
@@ -73,13 +81,18 @@ for win in (CFG.get('music', []) if PR.get('ton.musik', True) else []):
     L = i1 - i0
     off = int(win.get('offset', 0) * SR)
     seg = tr[off:off + L]
+    if len(seg) < L and not win.get('loop', not src):   # Jingle: nicht loopen, danach Stille
+        seg = np.concatenate([seg, np.zeros((L - len(seg), 2), np.float32)])
     if len(seg) < L:
         print(f'⚠ Musik "{name}" zu kurz für Fenster {win["from"]}–{win["to"]} → wird geloopt; besser music.py mit mehr Sekunden')
         seg = np.concatenate([tr] * (L // len(tr) + 2))[off:off + L]
-    fi, fo = int(1.2 * SR), int((4.0 if win['to'] == 'end' else 3.0) * SR)
+    fi, fo = int(win.get('fade_in', 1.2) * SR), int(win.get('fade_out', 4.0 if win['to'] == 'end' else 3.0) * SR)
     ramp = np.ones(L, np.float32)
-    ramp[:fi] = np.linspace(0, 1, fi) ** 2
-    ramp[-fo:] = np.linspace(1, 0, fo) ** 1.5
+    fi, fo = min(fi, L), min(fo, L)
+    if fi > 0:
+        ramp[:fi] = np.linspace(0, 1, fi) ** 2
+    if fo > 0:
+        ramp[-fo:] = np.linspace(1, 0, fo) ** 1.5
     d = duck[i0:i1]
     gain = db(win.get('gap_db', -16)) * (1 - d) + db(win.get('speech_db', -23)) * d
     music[i0:i1] += seg * (ramp * gain)[:, None]

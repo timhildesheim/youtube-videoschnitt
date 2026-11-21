@@ -38,12 +38,15 @@ def layout_at(t_out, kind):
     return 'TH' if kind == 'th' else 'SC'
 
 
-fx, fy = LAYOUT.get('face', [0.5, 0.42])
+# Mehrere Personen im Bild (Interview mit Gast): layout.faces = [[x, y], …] – jede bekommt eine Sperrzone.
+FACES = LAYOUT.get('faces') or [LAYOUT.get('face', [0.5, 0.42])]
 # Listen wirken schnell „zu nah am Gesicht“ → Sperrzone inkl. Push-in-Zoom und Luft: ±390 px um die Gesichtsmitte
-FACE_TH = (fx * 1920 - 390, fy * 1080 - 290, fx * 1920 + 390, fy * 1080 + 170)   # Stirn bis Kinn, Augen mittig, plus Abstand
+# (bei mehreren Gesichtern ±300 px, sonst bliebe kaum Platz)
+_hw = 390 if len(FACES) == 1 else 300
+FACE_TH = [(fx * 1920 - _hw, fy * 1080 - 290, fx * 1920 + _hw, fy * 1080 + 170) for fx, fy in FACES]   # Stirn bis Kinn
 cam = LAYOUT.get('cam') or {}
-FACE_SC = ((cam['x'] + cam['w'] * .15, cam['y'] + cam['h'] * .12, cam['x'] + cam['w'] * .85, cam['y'] + cam['h'] * .58)
-           if cam.get('shape') == 'rect' else None)
+FACE_SC = ([(cam['x'] + cam['w'] * .15, cam['y'] + cam['h'] * .12, cam['x'] + cam['w'] * .85, cam['y'] + cam['h'] * .58)]
+           if cam.get('shape') == 'rect' else [])
 
 rects = json.loads(subprocess.run(['node', os.path.join(SK, 'rects.mjs')] + [f'segs/{i}' for i in ids],
                                   capture_output=True, text=True).stdout)
@@ -56,6 +59,8 @@ for m in man:
         cid = r['id']
         if r['x1'] - r['x0'] < 20 or r['y1'] - r['y0'] < 20:
             continue                                   # leere Hilfselemente
+        if r['x1'] - r['x0'] >= 1900 and r['y1'] - r['y0'] >= 1000:
+            continue                                   # bildfüllende Grafik (Marken-Intro, Endkarte) – deckt bewusst alles ab
         a = re.search(r"tl\.fromTo\('#%s',.*?,(\d+(?:\.\d+)?)\);" % re.escape(cid), html)
         b = re.search(r"tl\.to\('#%s',\{opacity:0.*?,(\d+(?:\.\d+)?)\);" % re.escape(cid), html)
         t0 = float(a.group(1)) if a else 0.0
@@ -66,8 +71,8 @@ for m in man:
         framed = f'id="{cid}-cam"' in html          # Learning/Kapitel im Vollbild: Person scharf im Rahmen, Hintergrund geblurrt → gewollt
         for tt in ([] if framed else np.linspace(t0, max(t0, t1), 5)):
             lay = layout_at(m['t0'] + tt, m['kind'])
-            box = FACE_TH if lay == 'TH' else FACE_SC
-            if box and r['x0'] < box[2] and r['x1'] > box[0] and r['y0'] < box[3] and r['y1'] > box[1]:
+            boxes = FACE_TH if lay == 'TH' else FACE_SC
+            if any(r['x0'] < bx[2] and r['x1'] > bx[0] and r['y0'] < bx[3] and r['y1'] > bx[1] for bx in boxes):
                 msg.append(f'GESICHT ({lay}) bei {m["t0"] + tt:.1f}s')
                 break
         if msg:

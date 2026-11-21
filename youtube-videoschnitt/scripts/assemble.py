@@ -73,9 +73,29 @@ if ad:
         print('Werbekennzeichnung nur in:', ', '.join(f'{int(x//60)}:{x%60:05.2f}–{int(y//60)}:{y%60:05.2f}' for x, y in win))
     fc.append(f'[vpre][{ai + 1}:v]overlay=x=W-{48 + r}:y={40 - t}:shortest=1{en},format=yuv420p[vout]')
     print('Werbekennzeichnung:', txt)
+# Opener (Cartoon-/Erklärfilm, references/opener.md): ../opener.mp4 oder project.json → "opener": "<Pfad>" wird
+# vorangestellt ("opener": false schaltet ab). Er bringt seinen eigenen, schon normalisierten Ton mit.
+amap = f'{ai}:a'
+op = CFG.get('opener', os.path.join('..', 'opener.mp4'))
+if op and os.path.exists(op):
+    io = len([x for x in inputs if x == '-i'])
+    inputs += ['-i', op]
+    fc[-1] = fc[-1].replace('[vout]', '[vmain]')
+    fc.append(f'[{io}:v]scale=3840:2160:force_original_aspect_ratio=decrease,pad=3840:2160:(ow-iw)/2:(oh-ih)/2,fps={FPS},'
+              f'format=yuv420p,setsar=1,settb=1/{FPS},setpts=N/{FPS}/TB[opv];[vmain]settb=1/{FPS},setpts=N/{FPS}/TB[vm2];[opv][vm2]concat=n=2:v=1:a=0[vout]')
+    fc.append(f'[{io}:a]aresample=48000,aformat=channel_layouts=stereo,asetpts=N/SR/TB[opa];[{ai}:a]aformat=channel_layouts=stereo,asetpts=N/SR/TB[mna];[opa][mna]concat=n=2:v=0:a=1[aout]')
+    amap = '[aout]'
+    od = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', op],
+                              capture_output=True, text=True).stdout)
+    print(f'Opener vorangestellt: {op} ({od:.1f} s) – Kapitel/Transkript: export_texts.py verschiebt um diese Dauer')
+    CFG['opener_sec'] = round(od, 3)
+    json.dump(CFG, open('project.json', 'w'), ensure_ascii=False, indent=1)
+elif CFG.get('opener_sec'):
+    CFG['opener_sec'] = 0   # kein Opener (mehr) → keine Verschiebung
+    json.dump(CFG, open('project.json', 'w'), ensure_ascii=False, indent=1)
 open('assemble_filter.txt', 'w').write(';\n'.join(fc))
 subprocess.run(['ffmpeg', '-hide_banner', '-v', 'error', '-stats', '-y', *inputs, '-/filter_complex', 'assemble_filter.txt',
-                '-map', '[vout]', '-map', f'{ai}:a', '-c:v', 'libx264', '-preset', 'fast', '-crf', '16', '-profile:v', 'high',
+                '-map', '[vout]', '-map', amap, '-c:v', 'libx264', '-preset', 'fast', '-crf', '16', '-profile:v', 'high',
                 '-g', '60', '-bf', '2', '-x264-params', 'aq-mode=3', '-color_primaries', 'bt709', '-color_trc', 'bt709',
                 '-colorspace', 'bt709', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-shortest', '-movflags', '+faststart', OUT], check=True)
 p = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=width,height,bit_rate', '-show_entries', 'format=duration',

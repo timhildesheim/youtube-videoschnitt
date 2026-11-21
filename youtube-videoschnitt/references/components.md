@@ -54,3 +54,10 @@ CTA, getippten Suchen, Partner-Einblendungen und dem Abo-Störer automatisch mit
 
 **Ältere Storyboards** (vor Version 2 des Skills) laufen weiter: alte Parameter wie `icon=`, `light=`, `icons=` werden
 angenommen und ignoriert, `textbehind` mit festem Fenster warnt nur, wenn es zu schnell wird.
+
+## Gast-Format (Porträt/Interview) – Details in `intro-steckbrief.md`
+| Methode | Wirkung |
+|---|---|
+| `c.intro(cid, t0, gast=None, rolle=None, folge=None, titel=None, dur=6.4)` | Marken-Intro über dem laufenden Video: Abdunkeln + Blur, schräger Akzent-Strich, Logo + Kanalname, Zeile „Folge n / Gast, Rolle“, Abgang als schräger Doppel-Wisch. Werte aus `project.json → gast`, wenn nicht übergeben. Jingle als Musikfenster `track: "jingle"`. |
+| `c.steckbrief(cid, t0, t1, name=None, rolle=None, fakten=None, w=620)` | Gast-Steckbrief frei im Bild gegenüber dem Gesicht: Label mit Akzentstrich, Name groß, Rolle, 3–5 Zeilen „Label · Wert“. `fakten=[(Label, Wert)]` oder `[(t, Label, Wert)]`. |
+| `c.ortsmarke(cid, t0, t1, label=None, detail=None, stadt=None, pos=None)` | Pin mit Pulsring, Stadt klein, Ortsteil groß, Detailzeile; Standard unten links. |

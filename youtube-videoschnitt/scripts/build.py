@@ -7,7 +7,7 @@ Pro Segment (segs/<id>/): index.html, bg.mp4 (Ausschnitt aus base.mp4, dichte GO
 cut_<id>.webm für Text-hinter-Person, Symlinks auf Schriften/Icons/Logo/Kanalbild (Profil) und GSAP. Schreibt manifest.json.
 Vorhandene bg.mp4/cut_*.webm werden wiederverwendet – index.html wird immer neu geschrieben.
 """
-import importlib.util, json, os, subprocess, sys
+import importlib.util, json, os, shutil, subprocess, sys
 
 W = os.getcwd()
 SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,11 +47,14 @@ for c in comps:
     d = os.path.join(W, 'segs', c.id)
     os.makedirs(d, exist_ok=True)
     for a in ASSETS:   # spätere Einträge (Projekt-Assets) gewinnen bei gleichem Namen
+        # Kopieren statt Symlink: neuere HyperFrames-Versionen (≥ 0.9.7x) liefern Symlinks auf Ziele außerhalb des
+        # Segmentordners nicht aus (404) – dann fehlt z. B. gsap.min.js und keine Einblendung erscheint.
         dst = os.path.join(d, os.path.basename(a))
-        if os.path.islink(dst) and os.readlink(dst) != a:
+        if os.path.islink(dst):
             os.remove(dst)
-        if not os.path.lexists(dst):
-            os.symlink(a, dst)
+        src = os.path.realpath(a)
+        if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(src) or os.path.getsize(dst) != os.path.getsize(src):
+            shutil.copy2(src, dst)
     open(os.path.join(d, 'index.html'), 'w').write(c.html())
     bg = os.path.join(d, 'bg.mp4')
     # Wiederverwenden nur, wenn der Ausschnitt noch zu Start und Länge des Segments passt (bg.key). Sonst zeigt das

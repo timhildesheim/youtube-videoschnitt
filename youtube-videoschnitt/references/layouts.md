@@ -58,3 +58,10 @@ Bildausschnitt: Die Rohkamera ist meist weiter als die Vollbild-Kamera-Szene im 
 zoomt hinein). `match_crop.py` misst das (FFT-Kreuzkorrelation Rohkamera ↔ Vollbild, Übereinstimmung > 0,99 =
 deckungsgleich), render_base.py setzt die Kamera dann mit genau diesem Ausschnitt ein. Den Wert in
 `profil.aufnahme.kamera_spur.crop` speichern; ändert sich die Szene, neu messen.
+
+## Zwei Personen im Bild (Interview)
+Sitzen Host und Gast gemeinsam im Bild, beide Gesichtsmitten messen und als `layout.faces = [[x1, y1], [x2, y2]]`
+(0..1) in project.json eintragen; `layout.face` = die Person, die meist spricht (für Push-ins). `check_layout.py`
+sperrt dann beide Gesichter, `steckbrief()` wählt die freiere Seite. Einblendungen eher oben/unten und am Rand, große
+Wörter hinter der Person (`textbehind`) nur in Einzel-Einstellungen. Bei zwei Kameras: Einstellung pro Abschnitt im
+Storyboard wählen (Gast spricht → Gast-Kamera).
