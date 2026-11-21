@@ -13,7 +13,9 @@
   "handle": "",
   "url": "",
   "avatar": "kanal-avatar.jpg",
-  "_avatar": "Dateiname im Profilordner. Fehlt die Datei, zeigt der Abo-Störer Initialen."
+  "_avatar": "Dateiname im Profilordner. Fehlt die Datei, zeigt der Abo-Störer Initialen.",
+  "stadt": "",
+  "_stadt": "Stadt/Region des Kanals – Kicker der Ortsmarke (optional)."
  },
  "marke": {
   "name": "",
@@ -39,7 +41,9 @@
    "akzent": "",
    "_schriften": "Google-Fonts-Name der EINEN Schrift für alle Einblendungen (Clean-Stil: Headlines 600, Text 400). setup_profil.py lädt sie in den Profilordner. akzent bleibt normalerweise leer (nur für eigene raw()-Bausteine)."
   },
-  "_schriften": "Google-Fonts-Namen. setup_profil.py lädt sie in den Profilordner. akzent = Schrift für das eine betonte Wort (*wort*) pro Titel."
+  "_schriften": "Google-Fonts-Namen. setup_profil.py lädt sie in den Profilordner. akzent = Schrift für das eine betonte Wort (*wort*) pro Titel.",
+  "skyline": "",
+  "_skyline": "Linien-Skyline für Intro und Endkarte: mitgelieferter Name (leipzig) oder eigene SVG im Profilordner (Linien mit pathLength=\"1\", stroke=\"currentColor\"). Leer = keine."
  },
  "cta": {
   "aktiv": true,
@@ -77,7 +81,9 @@
   "rabatt": "*{rabatt}* Rabatt mit meinem Code",
   "rabattcode": "Rabattcode",
   "code_angewendet": "Code angewendet",
-  "link_und_code": "Link und Code in der Beschreibung"
+  "link_und_code": "Link und Code in der Beschreibung",
+  "folge": "Folge {n}",
+  "steckbrief": "Steckbrief"
  },
  "ablage": {
   "wurzel": "",
@@ -127,7 +133,11 @@
   "learnings": true,
   "kapitelkarten": true,
   "namens_bauchbinde": true,
-  "_hinweis": "Bausteine abschalten, die nicht zum Kanal passen. Details in references/storyboard-guide.md."
+  "_hinweis": "Bausteine abschalten, die nicht zum Kanal passen. Details in references/storyboard-guide.md.",
+  "intro": false,
+  "steckbrief": false,
+  "ortsmarke": false,
+  "_gastformat": "intro/steckbrief/ortsmarke: Gast-Format (Marken-Intro über dem Interview-Anfang, Steckbrief, Ortsmarke) – references/intro-steckbrief.md"
  },
  "ton": {
   "stimme_fx": "anull",
@@ -137,14 +147,17 @@
   "musik_stimmungen": {},
   "_musik_stimmungen": "Eigene MusicGen-Prompts je Stimmung, z. B. {\"intro\": \"…\"}. Leer = Standard (intro, work, reveal, outro, tension).",
   "sfx": true,
-  "sfx_pegel": 1.0
+  "sfx_pegel": 1.0,
+  "intro_jingle": "",
+  "_intro_jingle": "Dateiname im Profilordner (z. B. intro-jingle.mp3) – läuft unter dem Marken-Intro, Musikfenster track \"jingle\"."
  },
  "bilder": {
   "generator": "keiner",
   "_generator": "codex = Codex-CLI aus der ChatGPT-App (ChatGPT-Abo, kein API-Key) für eigene Fotos und Illustrationen · keiner = nur Screenshots · anderer = Werkzeug in 'hinweis' beschreiben",
   "codex_pfad": "",
   "hinweis": "",
-  "foto_stil": ""
+  "foto_stil": "",
+  "opener_stil": ""
  },
  "schreibstil": {
   "regeln": [
@@ -159,5 +172,7 @@
  "_wuensche": "Freie Regeln aus dem Interview und aus späterem Feedback, je ein Satz. Werden bei jedem Video beachtet.",
  "werbepartner": {
   "_info": "Bezahlte Kooperationen: je Partner ein Ordner <Profil>/partner/<name>/ mit partner.json und Logos (references/werbepartner.md). Im Video dann \"sponsor\": \"<name>\" in project.json."
- }
+ },
+ "shorts": false,
+ "_shorts": "true = nach jedem Video 3–5 Shorts (9:16) mit Untertiteln vorschlagen und erzeugen (scripts/shorts.py)."
 }

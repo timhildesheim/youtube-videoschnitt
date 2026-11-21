@@ -3,7 +3,7 @@
     python3 $SK/scripts/vorschau.py [hintergrund.jpg|.png|.mp4]
 
 Hintergrund: am besten ein Standbild aus einer echten Aufnahme (Bildschirm oder Kamera). Ohne Angabe wird ein
-neutraler Verlauf erzeugt. Ergebnis: <Profil>/vorschau/vorschau.jpg (Kontaktbogen, 3×3) – der Person zeigen und
+neutraler Verlauf erzeugt. Ergebnis: <Profil>/vorschau/vorschau.jpg (Kontaktbogen, 3×4: Bausteine, Intro, Steckbrief, Endkarte) – der Person zeigen und
 Farben/Schriften so lange anpassen (profil.json → setup_profil.py → vorschau.py), bis es gefällt.
 """
 import glob, json, os, shutil, subprocess, sys
@@ -17,7 +17,7 @@ if not PR.EXISTS:
 W = os.path.join(PR.PDIR, 'vorschau')
 shutil.rmtree(W, ignore_errors=True)
 os.makedirs(os.path.join(W, 'assets'))
-DUR = 40.0
+DUR = 52.0
 bg = sys.argv[1] if len(sys.argv) > 1 else None
 run = lambda c, **k: subprocess.run(c, check=True, **k)
 
@@ -65,10 +65,14 @@ c.tile('nm', 20.3, 24.6, {{'left': 110, 'top': 820}}, {(PR.get('person.zusatz') 
 c.subscribe('a1', 25.0)
 c.community('cm', 30.0, 34.6, [(30.2, 'Vorteil *eins*'), (30.4, 'Vorteil zwei'), (30.6, 'Vorteil drei')], pill_at=30.8)
 c.before_after('ba', [(35.2, 0), (36.4, 1)])
+c = comp('v3', 40, 52, 'th')
+c.intro('in', 40.3, gast='Anna Beispiel', rolle='Goldschmiedin', folge=1)
+c.steckbrief('sb', 47.0, 51.8, 'Anna *Beispiel*', 'Goldschmiedin aus Plagwitz', [('Seit', '2009 selbstständig'), ('Stadtteil', 'Plagwitz'), ('Werkstatt', '*Zwölf* Quadratmeter'), ('Fun Fact', 'Trägt selbst keinen Schmuck')])
+c.ortsmarke('om', 47.2, 51.8, 'Plagwitz', 'Werkstatt an der Karl-Heine-Straße')
 endcard()
 ''')
 run([sys.executable, os.path.join(HERE, 'build.py')], cwd=W, stdout=subprocess.DEVNULL)
-shots = {'v1': [2.4, 7.6, 12.4, 17.6], 'v2': [2.8, 8.4, 13.2, 16.6], 'end': [3.0]}
+shots = {'v1': [2.4, 7.6, 12.4, 17.6], 'v2': [2.8, 8.4, 13.2, 16.6], 'v3': [3.0, 5.85, 10.0], 'end': [3.0]}
 k = 0
 for sid, ts in shots.items():
     d = f'{W}/segs/{sid}'
@@ -80,6 +84,6 @@ for sid, ts in shots.items():
         run(['ffmpeg', '-v', 'error', '-y', '-i', f, '-vf', 'scale=960:-1', f'{W}/p_{k:02d}.jpg'])
         k += 1
 open(f'{W}/_l.txt', 'w').write(''.join(f"file '{f}'\n" for f in sorted(glob.glob(f'{W}/p_*.jpg'))))
-run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', f'{W}/_l.txt', '-vf', 'tile=3x3:padding=8:color=black',
+run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', f'{W}/_l.txt', '-vf', 'tile=3x4:padding=8:color=black',
      '-frames:v', '1', '-q:v', '2', f'{W}/vorschau.jpg'])
 print(f'{k} Bilder → {W}/vorschau.jpg')

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 300" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<!-- Leipzig, stilisierte Linien-Skyline (selbst gezeichnet, frei nutzbar). Von links: Altbauten, Völkerschlachtdenkmal,
+     Neues Rathaus, Thomaskirche, City-Hochhaus, Paulinum, Nikolaikirche, Hauptbahnhof, MDR-Turm.
+     Jede Linie hat pathLength="1" für die Zeichen-Animation. -->
+<path pathLength="1" d="M0 290 H1920"/>
+<!-- Altbauten links -->
+<path pathLength="1" d="M20 290 V236 L52 214 L84 236 V290 M96 290 V246 H150 V226 L176 210 L202 226 V290"/>
+<!-- Völkerschlachtdenkmal -->
+<path pathLength="1" d="M226 290 V268 H256 V254 H280 L298 156 Q300 140 314 134 Q312 112 330 98 Q348 112 346 134 Q360 140 362 156 L380 254 H404 V268 H434 V290"/>
+<path pathLength="1" d="M306 150 H354 M316 134 H344 M330 98 V88"/>
+<!-- Häuserzeile -->
+<path pathLength="1" d="M458 290 V250 H498 V238 H538 V256 H566 V290"/>
+<!-- Neues Rathaus -->
+<path pathLength="1" d="M584 290 V218 L604 204 H700 L720 218 V290 M630 204 V122 H668 V204 M630 122 L638 106 H660 L668 122 M641 106 V82 Q649 70 657 82 V106 M649 70 V44"/>
+<!-- Thomaskirche -->
+<path pathLength="1" d="M752 290 V150 H784 V290 M752 150 Q768 128 784 150 M768 134 V104 M762 116 H774 M784 244 L846 200 L908 244 V290"/>
+<!-- City-Hochhaus (Uni-Riese) -->
+<path pathLength="1" d="M992 290 V52 Q1034 26 1078 38 V290 M1036 31 V12"/>
+<path pathLength="1" d="M1004 110 H1066 M1004 170 H1066 M1004 230 H1066" stroke-width="1.6" opacity=".5"/>
+<!-- Paulinum -->
+<path pathLength="1" d="M1108 290 V206 L1164 122 L1220 206 V290 M1164 160 m-15 0 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 M1132 206 H1196"/>
+<!-- Nikolaikirche -->
+<path pathLength="1" d="M1246 290 V238 H1336 V290 M1278 238 V148 H1304 V238 M1278 148 L1291 124 L1304 148 M1291 124 V104"/>
+<!-- Hauptbahnhof -->
+<path pathLength="1" d="M1370 290 V234 H1660 V290 M1386 234 Q1418 192 1450 234 M1450 234 Q1482 192 1514 234 M1514 234 Q1546 192 1578 234 M1578 234 Q1610 192 1642 234"/>
+<!-- MDR-Turm -->
+<path pathLength="1" d="M1702 290 V96 H1734 V290 M1702 96 L1710 78 H1726 L1734 96 M1718 78 V40"/>
+<!-- Altbauten rechts -->
+<path pathLength="1" d="M1760 290 V244 L1790 226 L1820 244 V290 M1834 290 V254 H1900 V290"/>
+</svg>

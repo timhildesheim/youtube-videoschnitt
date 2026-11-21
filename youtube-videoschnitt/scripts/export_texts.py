@@ -24,7 +24,8 @@ def cut_time(t):
     return tm[-1][2] + tm[-1][1] - tm[-1][0]
 
 
-words = [{'text': x['text'], 'start': round(cut_time(x['start']), 3)} for x in json.load(open('transcript/transcript.json'))]
+OFF = json.load(open('project.json')).get('opener_sec', 0)   # Opener vorangestellt (assemble.py) → alles verschiebt sich
+words = [{'text': x['text'], 'start': round(cut_time(x['start']) + OFF, 3)} for x in json.load(open('transcript/transcript.json'))]
 lines, cur, st = [], [], None
 for i, x in enumerate(words):
     st = x['start'] if st is None else st

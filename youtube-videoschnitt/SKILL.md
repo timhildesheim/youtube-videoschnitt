@@ -41,6 +41,10 @@ Profil: `~/.config/youtube-videoschnitt/profil.json` mit Schrift, Logo, Kanalbil
   wenn `schnitt.inhalt_kuerzen` es erlaubt – nie mitten im Satz schneiden, um eine Ziellänge zu treffen.
 - **Musik** lokal komponiert, nicht durchgehend (Intro, Outro, Reveals, Arbeitsphasen), nur wenn `ton.musik`.
   Sound-Effekte dezent, nur wenn `ton.sfx`.
+- **Gast-Format** (wenn `einblendungen.intro`/`steckbrief`/`ortsmarke` an sind): Gast-Daten in `project.json → gast`
+  erfragen, Marken-Intro über den Interview-Anfang (nach Opener/Hook) mit Jingle (`ton.intro_jingle`), Steckbrief beim
+  Vorstellen, Ortsmarke bei Ortswechseln. Ein fertiger Opener (`opener.mp4` im Videoordner, `references/opener.md`)
+  wird vorangestellt. Ablauf und Regeln: `references/intro-steckbrief.md`.
 - **Kamera bleibt scharf**, wenn der Hintergrund für eine große Einblendung geblurrt wird.
 - **Lesbarkeit**: hinter frei schwebender Schrift lokal blurren.
 - **Stimme** nach `ton.stimme_fx` (Standard: Original). Nur der Gesamtpegel wird auf `ton.ziel_lufs` gebracht.
@@ -82,6 +86,10 @@ insgesamt ~2–3 Stunden.
 ### 0 · Umgebung prüfen
 `bash $SK/scripts/check_env.sh` – richtet Whisper-Modell und Python-Umgebung (`~/.cache/youtube-videoschnitt/mgenv`)
 bei Bedarf ein und prüft das Profil. Rund 25–30 GB freien Platz pro 30-Minuten-Projekt einplanen.
+
+### 0b · Gast-Format (wenn `einblendungen.intro`/`steckbrief` an)
+Gast-Daten für `project.json → gast` erfragen (Name, Rolle, Folge, Ort, 3–5 Fakten) – `references/intro-steckbrief.md`.
+Opener gewünscht? Dann parallel zum Schnitt `references/opener.md` (Drehbuch freigeben lassen, Bilder kosten Credits).
 
 ### 1 · Video untersuchen und transkribieren
 `mkdir -p "<Videoordner>/<arbeitsordner>" && cd "$_" && python3 $SK/scripts/prepare.py "../<Hauptvideo>.mp4"` →
@@ -180,6 +188,12 @@ Abschnittsanfänge, mit `S()` umgerechnet; erstes Kapitel `0:00`, jedes ≥ 10 s
 ablegen (`references/description.md`). Kurz berichten: Ergebnisdatei, Länge vorher/nachher, was eingebaut wurde,
 was die Person selbst prüfen sollte (Ton anhören – Musik ist KI-generiert), Größe des Arbeitsordners (Aufräumen
 anbieten). Nach Feedback fragen und es ins Profil übernehmen.
+
+### 12b · Shorts (wenn gewünscht oder `profil.shorts` an)
+3–5 starke Momente (20–60 s, in sich verständlich, Pointe/Aha am Ende) aus dem geschnittenen Transkript wählen, mit
+Hook-Titel als `shorts.json` anlegen (Format im Kopf von `scripts/shorts.py`), dann
+`python3 $SK/scripts/shorts.py --vorschau` (Kontrollbilder: Gesicht im Ausschnitt? sonst `face_x`), danach ohne
+`--vorschau` → `../Shorts/<name>.mp4` (1080×1920, Untertitel Wort für Wort, −14 LUFS).
 
 ### 13 · Optional: Timeline für DaVinci Resolve
 Nur wenn die Person von Hand nachjustieren will. `python3 $SK/scripts/export_resolve.py` (~30 s) → `resolve/<Titel>.xml`

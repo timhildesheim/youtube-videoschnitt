@@ -211,6 +211,26 @@ def _load_sponsor():
 SPONSOR = _load_sponsor()
 
 
+def skyline_svg(sid, height=300):
+    """Linien-Skyline aus dem Profil (marke.skyline): Name einer mitgelieferten Skyline (assets/skylines/<name>.svg,
+    z. B. 'leipzig') oder eigene SVG-Datei im Profilordner. Leer → ''. Linien brauchen pathLength="1" (Zeichen-Animation)."""
+    name = PR.get('marke.skyline') or ''
+    if not name:
+        return ''
+    f = PR.pfile(name) if name.endswith('.svg') else os.path.join(SKILL, 'assets', 'skylines', f'{name}.svg')
+    if not f or not os.path.exists(f):
+        print(f'⚠ Skyline „{name}“ nicht gefunden')
+        return ''
+    svg = re.sub(r'<!--.*?-->', '', open(f).read(), flags=re.S).strip()
+    return svg.replace('<svg ', f'<svg id="{sid}" width="1920" height="{height}" preserveAspectRatio="xMidYMax meet" style="display:block;overflow:visible" ', 1)
+
+
+def skyline_js(sel, t, dur=1.6):
+    """GSAP-Zeilen: Linien der Skyline zeichnen sich von links nach rechts."""
+    return [f"gsap.set('{sel} path',{{strokeDasharray:1,strokeDashoffset:1}});",
+            f"tl.fromTo('{sel} path',{{strokeDashoffset:1}},{{strokeDashoffset:0,duration:{dur},ease:'power2.inOut',stagger:.07}},{t});"]
+
+
 def pos_css(p):
     return ';'.join(f'{k}:{v}px' for k, v in p.items())
 
@@ -789,6 +809,145 @@ class Comp:
         self.js += js
         self.sfx += [(t0, 'whoosh-short', 0.16), (self.t0 + ts, 'typing', 0.12)]
 
+    # ───────── Marken-Intro und Gast-Steckbrief ─────────
+    def intro(self, cid, t0, gast=None, rolle=None, folge=None, titel=None, dur=6.4, logo=True, skyline=True):
+        """Marken-Intro ÜBER dem laufenden Video (≈ 6 s, z. B. direkt nach dem Cartoon-Opener/Cold Open).
+
+        Ablauf: Bild dunkelt ab und verschwimmt → ein Akzent-Strich (schräg wie im Logo) zieht durchs Bild →
+        Logo und Kanalname steigen ein → feine Akzentlinie → Zeile „Folge n · Gast, Rolle“ (oder titel) →
+        Abgang als schräger Wisch (Akzent + Basis), der das Video wieder freigibt.
+        Skyline (marke.skyline, z. B. Leipzig) zeichnet sich dabei als feine Linie unten ins Bild.
+        Musik: Jingle als Musikfenster in project.json legen (references/intro-steckbrief.md).
+        Alles optional: ohne gast/folge/titel zeigt es nur Logo + Kanalname.
+        """
+        g = CFG.get('gast') or {}   # project.json → "gast": {"name", "rolle", "folge", "fakten"}
+        gast, rolle, folge = gast or g.get('name'), rolle or g.get('rolle'), folge or g.get('folge')
+        a = self.L(t0)
+        b = q(a + dur)
+        self.cues += [t0 + 2.2, t0 + dur - 0.55]
+        name = PR.get('kanal.name') or ''
+        lf = PR.get('marke.logo_hell')
+        logo_html = (f'<img id="{cid}-logo" src="{os.path.basename(lf)}" style="height:210px;max-width:520px;object-fit:contain;opacity:0">'
+                     if logo and PR.pfile(lf) else '')
+        chars = ''.join(f'<span class="ic" style="display:inline-block;opacity:0">{H.escape(ch) if ch != " " else "&nbsp;"}</span>' for ch in name)
+        parts = []
+        if folge:
+            parts.append(H.escape(T.get('folge', 'Folge {n}').format(n=folge)))
+        if gast:
+            parts.append(f'<span style="font-weight:600;color:var(--papier)">{H.escape(gast)}</span>' + (f', {H.escape(rolle)}' if rolle else ''))
+        elif titel:
+            parts.append(rich(titel))
+        sep = f'<span style="color:var(--akzent);margin:0 18px">/</span>'
+        line = sep.join(parts)
+        sk = 'skewX(-9deg)'
+        sky = skyline_svg(f'{cid}-skys') if skyline else ''
+        sky_html = (f'<div id="{cid}-sky" style="position:absolute;left:0;bottom:0;width:1920px;height:300px;'
+                    f'color:rgba({RGB["papier"]},.5)">{sky}</div>') if sky else ''
+        pad = 150 if sky else 0
+        self.layers.append(f'''<div id="{cid}-dim" class="dim" style="background:rgba({RGB['basis']},.64);-webkit-backdrop-filter:blur(26px);backdrop-filter:blur(26px)"></div>
+<div id="{cid}-st" style="position:absolute;left:0;top:-120px;width:120px;height:1320px;background:var(--akzent);transform:{sk};opacity:0"></div>
+{sky_html}
+<div id="{cid}" class="card" style="left:0;top:0;width:1920px;height:1080px;opacity:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:{pad}px">
+<div id="{cid}-in" style="display:flex;flex-direction:column;align-items:center">
+{logo_html}
+<div id="{cid}-n" class="sh" style="font-size:112px;font-weight:700;letter-spacing:-.035em;line-height:1;margin-top:{40 if logo_html else 0}px;white-space:nowrap">{chars}</div>
+<div id="{cid}-ln" style="width:150px;height:5px;border-radius:3px;background:var(--akzent);margin:36px 0 30px;transform:scaleX(0)"></div>
+<div id="{cid}-g" class="tx sh" style="font-size:38px;opacity:0;white-space:nowrap">{line}</div>
+</div></div>
+<div id="{cid}-w1" style="position:absolute;left:0;top:-120px;width:2500px;height:1320px;background:var(--akzent);transform:{sk};opacity:0"></div>
+<div id="{cid}-w2" style="position:absolute;left:0;top:-120px;width:2500px;height:1320px;background:var(--basis);transform:{sk};opacity:0"></div>''')
+        js = [
+            f"tl.fromTo('#{cid}-dim',{{opacity:0}},{{opacity:1,duration:.6,ease:'power2.out'}},{a});",
+            f"tl.fromTo('#{cid}-st',{{x:-300,opacity:1}},{{x:2150,duration:.85,ease:'power3.inOut'}},{q(a+0.05)});",
+            f"tl.set('#{cid}-st',{{opacity:0}},{q(a+0.95)});",
+            f"tl.fromTo('#{cid}-in',{{scale:.97}},{{scale:1.025,duration:{q(dur-0.9)},ease:'none'}},{a});",
+            f"tl.fromTo('#{cid}-n .ic',{{opacity:0,y:60,filter:'blur(12px)'}},{{opacity:1,y:0,filter:'blur(0px)',duration:.9,ease:'expo.out',stagger:.035}},{q(a+0.75)});",
+            f"tl.fromTo('#{cid}-ln',{{scaleX:0}},{{scaleX:1,duration:.7,ease:'power3.inOut'}},{q(a+1.35)});",
+            f"tl.fromTo('#{cid}-g',{{opacity:0,y:16,filter:'blur(6px)'}},{{opacity:1,y:0,filter:'blur(0px)',duration:.8,ease:'power3.out'}},{q(a+1.6)});",
+            # Abgang: schräger Doppel-Wisch, Inhalt verschwindet, wenn die Fläche die Mitte deckt
+            f"tl.fromTo('#{cid}-w1',{{x:-2700,opacity:1}},{{x:2300,duration:1.05,ease:'power3.inOut'}},{q(b-1.1)});",
+            f"tl.fromTo('#{cid}-w2',{{x:-2700,opacity:1}},{{x:2300,duration:1.05,ease:'power3.inOut'}},{q(b-1.0)});",
+            f"tl.set(['#{cid}','#{cid}-dim','#{cid}-sky'],{{opacity:0}},{q(b-0.55)});",
+            f"tl.set(['#{cid}-w1','#{cid}-w2'],{{opacity:0}},{b});",
+        ]
+        if sky_html:
+            js += skyline_js(f'#{cid}-sky', q(a + 0.3), dur=1.8)
+            js.append(f"tl.fromTo('#{cid}-sky',{{x:0}},{{x:-40,duration:{q(dur)},ease:'none'}},{a});")
+        if logo_html:
+            js.append(f"tl.fromTo('#{cid}-logo',{{opacity:0,scale:.82,filter:'blur(18px)'}},{{opacity:1,scale:1,filter:'blur(0px)',duration:1.0,ease:'expo.out'}},{q(a+0.45)});")
+        self.js += js
+        self.sfx += [(t0 + 0.05, 'whoosh-cinematic', 0.2), (t0 + 0.5, 'impact-bass-1', 0.12), (t0 + dur - 1.1, 'whoosh', 0.18)]
+
+    def steckbrief(self, cid, t0, t1, name=None, rolle=None, fakten=None, pos=None, w=620, face=None, kicker=None):
+        """Gast-Steckbrief frei im Bild, auf der Seite gegenüber dem Gesicht.
+
+        fakten = [(Label, Wert), …] oder [(Ausgabezeit, Label, Wert), …] – mit Zeit erscheint die Zeile, wenn sie
+        gesagt wird, sonst nacheinander. Werte dürfen *Betonung* enthalten. 3–5 Zeilen, Werte kurz halten.
+        """
+        g = CFG.get('gast') or {}
+        name = name or g.get('name_betont') or g.get('name') or ''
+        rolle = rolle or g.get('steckbrief_rolle') or g.get('rolle')
+        fakten = fakten if fakten is not None else [tuple(f) for f in g.get('fakten', [])]
+        face = face or getattr(self, 'face', None) or LAYOUT.get('face', [0.5, 0.4])
+        if pos is None:
+            x0, x1 = free_x()
+            faces = LAYOUT.get('faces')
+            if faces and len(faces) > 1:   # zwei Personen: Seite mit dem meisten Abstand zum nächsten Gesicht
+                face = [0.0 if min(f[0] for f in faces) > 1 - max(f[0] for f in faces) else 1.0]
+            # Abstand zum Gesicht wie check_layout.py (±390 px um die Mitte) – bei mittigem Gesicht schmaler setzen
+            if face[0] <= 0.5:
+                avail = (x1 - 130) - (face[0] * 1920 + 410)
+                w = int(max(440, min(w, avail)))
+                left = x1 - 130 - w
+            else:
+                avail = (face[0] * 1920 - 410) - max(130, x0 + 60)
+                w = int(max(440, min(w, avail)))
+                left = max(130, x0 + 60)
+            pos = {'left': int(left), 'top': 250}
+        rows, times = [], []
+        for j, f in enumerate(fakten):
+            if len(f) == 3:
+                t, lab, val = f
+            else:
+                (lab, val), t = f, t0 + 0.9 + 0.22 * j
+            times.append(t)
+            rows.append(f'<div id="{cid}-i{j}" style="opacity:0;display:flex;gap:26px;align-items:baseline;padding:15px 0;border-top:1px solid rgba({RGB["papier"]},.16)">'
+                        f'<div class="sh" style="flex:none;width:170px;font-size:22px;font-weight:600;color:rgba({RGB["papier"]},.6)">{H.escape(lab)}</div>'
+                        f'<div class="li sh" style="font-size:30px">{rich(val)}</div></div>')
+        kick = kicker or T.get('steckbrief', 'Steckbrief')
+        lbl = (f'<div class="rv0 lbl sh" style="display:flex;align-items:center;gap:12px">'
+               f'<i style="display:block;width:6px;height:24px;background:var(--akzent);transform:skewX(-9deg)"></i>{H.escape(kick)}</div>')
+        ro = f'<div class="rv tx sh" style="font-size:30px;margin:10px 0 26px">{rich(rolle)}</div>' if rolle else '<div style="height:24px"></div>'
+        k = min(1.0, w / 620)   # schmaler Steckbrief → Schrift mitskalieren
+        if k < 1:
+            rows = [r.replace('font-size:30px', f'font-size:{int(30 * k)}px').replace('width:170px', f'width:{int(150 * k)}px').replace('font-size:22px', f'font-size:{int(22 * k)}px') for r in rows]
+            ro = ro.replace('font-size:30px', f'font-size:{int(30 * k)}px')
+        self._block(cid, pos, w, f'{lbl}<div class="hl sh" style="font-size:{int(76 * k)}px">{words(name)}</div>{ro}{"".join(rows)}', shade=.42)
+        self._reveal(cid, t0, t1, items=times, sfx='whoosh-short', gain=0.12)
+
+    def ortsmarke(self, cid, t0, t1, label=None, detail=None, stadt=None, pos=None):
+        """Ortsmarke: Pin mit Pulsring, Stadt klein, Ortsteil groß, Detailzeile – Standard unten links.
+        Werte aus project.json → gast.ort ({label, detail}) und profil.kanal.stadt, wenn nicht übergeben."""
+        o = (CFG.get('gast') or {}).get('ort') or {}
+        label = label or o.get('label') or ''
+        detail = detail if detail is not None else o.get('detail')
+        stadt = stadt if stadt is not None else (o.get('stadt') or PR.get('kanal.stadt') or '')
+        pos = pos or {'left': 110, 'top': 800}
+        pin = (f'<div style="position:relative;flex:none;width:64px;height:64px">'
+               f'<i id="{cid}-r" style="position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:2px solid var(--akzent);opacity:0"></i>'
+               f'<i style="position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--akzent)"></i>'
+               f'<div style="position:absolute;left:50%;top:50%;margin:-60px 0 0 -18px;color:var(--papier);filter:drop-shadow(0 3px 10px rgba(0,0,0,.45))">'
+               f'<svg width="36" height="46" viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 28s-9-8.6-9-15.5a9 9 0 0 1 18 0C21 19.4 12 28 12 28z"/><circle cx="12" cy="12.5" r="3.2"/></svg></div></div>')
+        st = f'<div class="rv0 lbl sh" style="margin-bottom:4px">{H.escape(stadt)}</div>' if stadt else ''
+        de = f'<div class="rv tx sh" style="font-size:26px;margin-top:8px">{rich(detail)}</div>' if detail else ''
+        inner = (f'<div style="display:flex;align-items:flex-end;gap:22px">{pin}<div>{st}'
+                 f'<div class="hl sh" style="font-size:52px;white-space:nowrap">{words(label)}</div>{de}</div></div>')
+        self._block(cid, pos, None, inner, shade=.4)
+        self._reveal(cid, t0, t1, sfx='pop', gain=0.1)
+        a, b = self.L(t0), self.L(t1)
+        n = max(1, int((b - a - 1.0) / 1.6))
+        self.js.append(f"tl.fromTo('#{cid}-r',{{scale:.6,opacity:.9}},{{scale:3.2,opacity:0,duration:1.6,ease:'power2.out',repeat:{n - 1}}},{q(a + 0.5)});")
+
     def raw(self, html_layer, js_lines, sfx=()):
         """Freie Komponente (eigenes HTML + GSAP-Zeilen). IDs eindeutig halten."""
         self.layers.append(html_layer)
@@ -847,12 +1006,16 @@ def endcard(seconds=None):
     logo = PR.get('marke.logo_hell')
     logo_html = (f'<img id="en-logo" src="{os.path.basename(logo)}" style="width:380px;max-height:200px;object-fit:contain;opacity:0">'
                  if PR.pfile(logo) else '<div id="en-logo"></div>')
-    claim = (CTA.get('claim') if on else '') or PR.get('kanal.name') or ''
-    sub = CTA.get('endkarte_sub', '') if on else (PR.get('kanal.handle') or '')
+    # Claim und Unterzeile gelten auch ohne aktiven CTA (dann mit „Abonnieren“-Pille)
+    claim = CTA.get('claim') or PR.get('kanal.name') or ''
+    sub = CTA.get('endkarte_sub') or PR.get('kanal.handle') or ''
     pill = (CTA.get('pille') or T['link_beschreibung']) if on else T['abonnieren']
     c = Comp('end', OUT_DUR, OUT_DUR + seconds, 'end')
     COMPS.append(c)
-    c.raw(f'''<div id="en-dim" class="dim" style="background:rgba({RGB['basis']},.62);-webkit-backdrop-filter:blur(34px);backdrop-filter:blur(34px)"></div>
+    sky = skyline_svg('en-skys', 200)
+    sky_html = (f'<div id="en-sky" style="position:absolute;left:0;top:880px;width:1920px;height:200px;color:rgba({RGB["papier"]},.32)">{sky}</div>'
+                if sky else '')
+    c.raw(f'''<div id="en-dim" class="dim" style="background:rgba({RGB['basis']},.62);-webkit-backdrop-filter:blur(34px);backdrop-filter:blur(34px)"></div>{sky_html}
 <div id="en" class="card" style="left:0;top:250px;width:1920px;text-align:center;opacity:1">
 {logo_html}
 <div id="en-t" class="ttl" style="font-size:112px;margin-top:46px;opacity:0">{rich(claim)}</div>
@@ -862,6 +1025,7 @@ def endcard(seconds=None):
            "tl.fromTo('#en-logo',{opacity:0,y:20},{opacity:1,y:0,duration:.8,ease:'expo.out'},0.3);",
            "tl.fromTo('#en-t',{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:'expo.out'},0.5);",
            "tl.fromTo('#en-s',{opacity:0,y:20},{opacity:1,y:0,duration:.8,ease:'expo.out'},0.8);",
-           "tl.fromTo('#en-p',{opacity:0,y:20,scale:.9},{opacity:1,y:0,scale:1,duration:.7,ease:'back.out(1.8)'},1.1);"],
+           "tl.fromTo('#en-p',{opacity:0,y:20,scale:.9},{opacity:1,y:0,scale:1,duration:.7,ease:'back.out(1.8)'},1.1);"]
+          + (skyline_js('#en-sky', 0.4, dur=2.0) if sky else []),
           sfx=[(OUT_DUR + 0.1, 'whoosh-cinematic', 0.2)])
     return c

@@ -9,7 +9,7 @@ import path from 'node:path';
 const [url, name, flag] = process.argv.slice(2);
 const home = process.env.HOME;
 const pp = execSync(`find ${home}/.npm/_npx -path "*node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js" | head -1`).toString().trim();
-const chrome = execSync(`find ${home}/.cache/puppeteer/chrome -path "*MacOS/Google Chrome for Testing" -type f | head -1`).toString().trim();
+const chrome = execSync(`find ${home}/.cache/puppeteer/chrome ${home}/.cache/hyperframes/chrome \\( -path "*MacOS/Google Chrome for Testing" -o -name "chrome-headless-shell" \\) -type f 2>/dev/null | head -1`).toString().trim();
 if (!pp || !chrome) { console.error('puppeteer/Chrome nicht gefunden – einmal `npx hyperframes doctor` ausführen'); process.exit(1); }
 const { default: puppeteer } = await import(pp);
 const b = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--hide-scrollbars'] });
